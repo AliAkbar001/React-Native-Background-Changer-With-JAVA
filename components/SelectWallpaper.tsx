@@ -6,10 +6,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  NativeModules
+  NativeModules,
+  Button
 } from 'react-native';
 
-function SelectWallpaper(): JSX.Element {
+function SelectWallpaper({ navigation }): JSX.Element {
   const [wallpaper, setWallpaper] = useState('https://images.unsplash.com/photo-1702906220516-11f24e4423c2?q=80&w=3774&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
 
   const changeWallpaper = () => {
@@ -24,6 +25,10 @@ function SelectWallpaper(): JSX.Element {
       <TouchableOpacity onPress={changeWallpaper} style={styles.button}>
         <Text style={styles.buttonText}>Change Wallpaper</Text>
       </TouchableOpacity>
+      <Button
+        title="Home"
+        onPress={() => navigation.navigate('Home')}
+      />
     </ImageBackground>
   </View>
   );
