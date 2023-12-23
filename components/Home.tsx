@@ -1,15 +1,13 @@
-import { Text, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
-import React from 'react'
-import { gallery } from '../galleryJSON'
+import { Text, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { gallery } from '../galleryJSON';
 
 export default function Home({ navigation }) {
-
   function handleNavigation(image:string){
-    navigation.navigate('SetWallpaper');
+    navigation.navigate('SetWallpaper',  { image });
   }
   const listItems = ({item})=>(
-    <TouchableOpacity  style={styles.imageBox} onPress={() => handleNavigation(item.path)}>
-      <Image source={item.path} style={styles.image}/> 
+    <TouchableOpacity  style={styles.imageBox} onPress={() => handleNavigation(item.name)}>
+      <Image source={{uri: item.path}} style={styles.image}/> 
       <Text style={styles.title}>{item.name}</Text>
     </TouchableOpacity>
   )

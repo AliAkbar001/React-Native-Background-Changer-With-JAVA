@@ -1,34 +1,70 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { gallery } from '../galleryJSON';
 import {
   ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  NativeModules,
-  Button
+  NativeModules
 } from 'react-native';
+import RNFetchBlob from 'rn-fetch-blob'
 
-function SelectWallpaper({ navigation }): JSX.Element {
-  const [wallpaper, setWallpaper] = useState('https://images.unsplash.com/photo-1702906220516-11f24e4423c2?q=80&w=3774&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+function SelectWallpaper({ route }): JSX.Element {
+  const  image  = route.params.image;
+  const [wallpaper, setWallpaper] = useState(require('../assets/white-background.jpeg'));
+
+  useEffect(() => {
+    gallery.forEach(element => {
+      if(element.name === image){
+        setWallpaper({uri: element.path});
+      }
+    });
+  }, [image])
 
   const changeWallpaper = () => {
     NativeModules.MyNativeModule.showToast('Wallpaper Change Successfully');
-    setWallpaper('https://images.unsplash.com/photo-1702988319113-051682d600a4?q=80&w=3774&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
   };
 
+  const downloadWallpaper = () => {
+    NativeModules.MyNativeModule.showToast('Wallpaper is downloading...');
+    let date = new Date();
+    // Get config and fs from RNFetchBlob
+    // config: To pass the downloading related options
+    // fs: Directory path where we want our image to download
+    const { config, fs } = RNFetchBlob;
+    let PictureDir = fs.dirs.PictureDir;
+    let options = {
+      fileCache: true,
+      addAndroidDownloads: {
+        // Related to the Android only
+        useDownloadManager: true,
+        notification: true,
+        path: PictureDir + '/image_' + Math.floor(date.getTime() + date.getSeconds() / 2) + '.jpeg',
+        description: 'Image',
+      },
+    };
+    config(options)
+      .fetch('GET', wallpaper.uri)
+      .then(res => {
+        console.log('res -> ', JSON.stringify(res));
+        NativeModules.MyNativeModule.showToast('Wallpaper download successfully');
+      });
+  };
 
   return (
     <View style={styles.container}>
-    <ImageBackground source={{uri :wallpaper}} style={styles.wallpaper}>
+    <ImageBackground source={wallpaper} style={styles.wallpaper}>
+      <Text style={styles.title}>{image}</Text>
+      <View>
       <TouchableOpacity onPress={changeWallpaper} style={styles.button}>
         <Text style={styles.buttonText}>Change Wallpaper</Text>
       </TouchableOpacity>
-      <Button
-        title="Home"
-        onPress={() => navigation.navigate('Home')}
-      />
+      <TouchableOpacity onPress={downloadWallpaper} style={styles.button}>
+        <Text style={styles.buttonText}>Download</Text>
+      </TouchableOpacity>
+      </View>
     </ImageBackground>
   </View>
   );
@@ -41,8 +77,8 @@ const styles = StyleSheet.create({
   wallpaper: {
     flex: 1,
     resizeMode: 'cover',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "flex-end",
+    padding: 15
   },
   button: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
@@ -53,8 +89,15 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#383737',
+    textAlign: 'center'
   },
-
+  title:{
+    color: 'white',
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    fontSize: 18
+  },
 });
 
 export default SelectWallpaper;
