@@ -7,7 +7,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  NativeModules
+  NativeModules,
+  //PermissionsAndroid
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob'
 
@@ -23,33 +24,57 @@ function SelectWallpaper({ route }): JSX.Element {
     });
   }, [image])
 
-  const changeWallpaper = () => {
-    NativeModules.MyNativeModule.showToast('Wallpaper Change Successfully');
-  };
+  // const requestWallpaperPermission = async () => {
+  //   try {
+  //     const granted = await PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.SET_WALLPAPER,
+  //       {
+  //         title: 'Set Wallpaper Permission',
+  //         message:
+  //           'Your app needs permission to set the wallpaper.',
+  //         buttonNeutral: 'Ask Me Later',
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK',
+  //       },
+  //     );
+  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //       console.log('You can set the wallpaper');
+  //     } else {
+  //       console.log('Change wallpaper permission denied');
+  //     }
+  //   } catch (err) {
+  //     console.warn(err);
+  //   }
+  // };
 
-  const downloadWallpaper = () => {
-    NativeModules.MyNativeModule.showToast('Wallpaper is downloading...');
+  const downloadWallpaper = (setAsWallpaper: boolean) => {
+    !setAsWallpaper && NativeModules.MyNativeModule.showToast('Wallpaper is downloading...');
     let date = new Date();
-    // Get config and fs from RNFetchBlob
-    // config: To pass the downloading related options
-    // fs: Directory path where we want our image to download
     const { config, fs } = RNFetchBlob;
     let PictureDir = fs.dirs.PictureDir;
+    const path = PictureDir + '/image_' + Math.floor(date.getTime() + date.getSeconds() / 2) + '.jpeg'
     let options = {
       fileCache: true,
       addAndroidDownloads: {
-        // Related to the Android only
         useDownloadManager: true,
         notification: true,
-        path: PictureDir + '/image_' + Math.floor(date.getTime() + date.getSeconds() / 2) + '.jpeg',
+        path: path,
         description: 'Image',
       },
     };
     config(options)
       .fetch('GET', wallpaper.uri)
-      .then(res => {
-        console.log('res -> ', JSON.stringify(res));
-        NativeModules.MyNativeModule.showToast('Wallpaper download successfully');
+      .then(async(res) => {
+        !setAsWallpaper && NativeModules.MyNativeModule.showToast('Wallpaper download successfully');
+        if(setAsWallpaper){
+          RNFetchBlob.fs.readFile(path, 'base64').then(base64Data => {
+            NativeModules.MyNativeModule.setWallpaper(base64Data)
+            NativeModules.MyNativeModule.showToast('Wallpaper change successfully');
+          })
+          .catch((error) => {
+            console.error('Error reading file:', error);
+          });
+        }
       });
   };
 
@@ -58,10 +83,10 @@ function SelectWallpaper({ route }): JSX.Element {
     <ImageBackground source={wallpaper} style={styles.wallpaper}>
       <Text style={styles.title}>{image}</Text>
       <View>
-      <TouchableOpacity onPress={changeWallpaper} style={styles.button}>
-        <Text style={styles.buttonText}>Change Wallpaper</Text>
+      <TouchableOpacity onPress={() => downloadWallpaper(true)} style={styles.button}>
+        <Text style={styles.buttonText}>Change Wallpaper.</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={downloadWallpaper} style={styles.button}>
+      <TouchableOpacity onPress={() => downloadWallpaper(false)} style={styles.button}>
         <Text style={styles.buttonText}>Download</Text>
       </TouchableOpacity>
       </View>
