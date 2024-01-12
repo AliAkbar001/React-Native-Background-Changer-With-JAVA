@@ -1,4 +1,4 @@
-import { Text, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { Text, Image, StyleSheet, FlatList, TouchableOpacity, StatusBar } from 'react-native';
 import { gallery } from '../galleryJSON';
 
 export default function Home({ navigation }) {
@@ -13,12 +13,16 @@ export default function Home({ navigation }) {
   )
 
   return (
-    <FlatList
-      data={gallery}
-      renderItem={listItems}
-      keyExtractor={(item) => item.name}
-      numColumns={2}
-    />
+    <>
+      <StatusBar backgroundColor={"red"}/>
+      <FlatList
+        data={gallery}
+        renderItem={listItems}
+        keyExtractor={(item) => item.name}
+        numColumns={2}
+      />
+    </>
+    
     // <ScrollView>
     //   <View style={styles.container}>
     //     { gallery.map((value, key:number) => 

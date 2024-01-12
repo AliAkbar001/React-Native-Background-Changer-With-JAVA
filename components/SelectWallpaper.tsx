@@ -62,9 +62,7 @@ function SelectWallpaper({ route }): JSX.Element {
         description: 'Image',
       },
     };
-    config(options)
-      .fetch('GET', wallpaper.uri)
-      .then(async(res) => {
+    config(options).fetch('GET', wallpaper.uri).then(async(res) => {
         !setAsWallpaper && NativeModules.MyNativeModule.showToast('Wallpaper download successfully');
         if(setAsWallpaper){
           RNFetchBlob.fs.readFile(path, 'base64').then(base64Data => {
